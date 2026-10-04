@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SkogsInsikt.Api/SkogsInsikt.Api.csproj" />
+  <Project Path="SkogsInsikt.Application/SkogsInsikt.Application.csproj" />
+  <Project Path="SkogsInsikt.Domain/SkogsInsikt.Domain.csproj" />
+  <Project Path="SkogsInsikt.Infrastructure/SkogsInsikt.Infrastructure.csproj" />
+  <Project Path="SkogsInsikt.Tests/SkogsInsikt.Tests.csproj" />
+</Solution>
