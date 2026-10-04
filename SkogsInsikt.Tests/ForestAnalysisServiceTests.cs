@@ -9,99 +9,127 @@ public class ForestAnalysisServiceTests
     [Fact]
     public async Task AnalyzeAsync_HighWind_ReturnsHighRisk()
     {
-        var weatherService = new FakeWeatherService
-        {
-            Weather = new WeatherData
-            {
-                Temperature = 15,
-                Precipitation = 0,
-                WindSpeed = 20
-            }
-        };
+        var service = CreateService(
+            temperature: 15,
+            precipitation: 0,
+            windSpeed: 20);
 
-        var service = new ForestAnalysisService(weatherService);
-
-        var forestArea = new ForestArea
-        {
-            Id = 1,
-            Name = "Testområde",
-            AreaHectares = 25,
-            TreeSpecies = "Gran",
-            PlantingYear = 2015,
-            Latitude = 56.6634,
-            Longitude = 16.3568
-        };
-
-        var result = await service.AnalyzeAsync(forestArea);
+        var result = await service.AnalyzeAsync(
+            CreateForestArea(2015));
 
         Assert.Equal("High", result.RiskLevel);
+        Assert.Contains("vindrisk", result.Recommendation);
         Assert.Equal(20, result.WindSpeed);
     }
 
     [Fact]
     public async Task AnalyzeAsync_HighPrecipitation_ReturnsMediumRisk()
     {
-        var weatherService = new FakeWeatherService
-        {
-            Weather = new WeatherData
-            {
-                Temperature = 12,
-                Precipitation = 8,
-                WindSpeed = 5
-            }
-        };
+        var service = CreateService(
+            temperature: 12,
+            precipitation: 8,
+            windSpeed: 5);
 
-        var service = new ForestAnalysisService(weatherService);
-
-        var forestArea = new ForestArea
-        {
-            Id = 2,
-            Name = "Regnigt testområde",
-            AreaHectares = 30,
-            TreeSpecies = "Tall",
-            PlantingYear = 2010,
-            Latitude = 56.6634,
-            Longitude = 16.3568
-        };
-
-        var result = await service.AnalyzeAsync(forestArea);
+        var result = await service.AnalyzeAsync(
+            CreateForestArea(2010));
 
         Assert.Equal("Medium", result.RiskLevel);
+        Assert.Contains("nederbörd", result.Recommendation);
         Assert.Equal(8, result.Precipitation);
     }
 
     [Fact]
-    public async Task AnalyzeAsync_NormalWeather_ReturnsLowRisk()
+    public async Task AnalyzeAsync_HotAndDryWeather_ReturnsMediumRisk()
     {
-        var weatherService = new FakeWeatherService
-        {
-            Weather = new WeatherData
-            {
-                Temperature = 18,
-                Precipitation = 1,
-                WindSpeed = 6
-            }
-        };
+        var service = CreateService(
+            temperature: 30,
+            precipitation: 0,
+            windSpeed: 5);
 
-        var service = new ForestAnalysisService(weatherService);
+        var result = await service.AnalyzeAsync(
+            CreateForestArea(2018));
 
-        var forestArea = new ForestArea
-        {
-            Id = 3,
-            Name = "Lugnt testområde",
-            AreaHectares = 20,
-            TreeSpecies = "Björk",
-            PlantingYear = 2018,
-            Latitude = 56.6634,
-            Longitude = 16.3568
-        };
+        Assert.Equal("Medium", result.RiskLevel);
+        Assert.Contains("torrt", result.Recommendation);
+    }
 
-        var result = await service.AnalyzeAsync(forestArea);
+    [Fact]
+    public async Task AnalyzeAsync_OldForestAndElevatedWind_ReturnsMediumRisk()
+    {
+        var service = CreateService(
+            temperature: 15,
+            precipitation: 0,
+            windSpeed: 12);
+
+        var result = await service.AnalyzeAsync(
+            CreateForestArea(DateTime.UtcNow.Year - 60));
+
+        Assert.Equal("Medium", result.RiskLevel);
+        Assert.Contains("Äldre skog", result.Recommendation);
+    }
+
+    [Fact]
+    public async Task AnalyzeAsync_NormalConditions_ReturnsLowRisk()
+    {
+        var service = CreateService(
+            temperature: 18,
+            precipitation: 1,
+            windSpeed: 6);
+
+        var result = await service.AnalyzeAsync(
+            CreateForestArea(2018));
 
         Assert.Equal("Low", result.RiskLevel);
         Assert.Equal(18, result.Temperature);
         Assert.Equal(1, result.Precipitation);
         Assert.Equal(6, result.WindSpeed);
+    }
+
+    [Fact]
+    public async Task AnalyzeAsync_HighWindTakesPriorityOverOtherRisks()
+    {
+        var service = CreateService(
+            temperature: 30,
+            precipitation: 8,
+            windSpeed: 20);
+
+        var result = await service.AnalyzeAsync(
+            CreateForestArea(DateTime.UtcNow.Year - 60));
+
+        Assert.Equal("High", result.RiskLevel);
+        Assert.Contains("vindrisk", result.Recommendation);
+    }
+
+    private static ForestAnalysisService CreateService(
+        double temperature,
+        double precipitation,
+        double windSpeed)
+    {
+        var weatherService = new FakeWeatherService
+        {
+            Weather = new WeatherData
+            {
+                Temperature = temperature,
+                Precipitation = precipitation,
+                WindSpeed = windSpeed
+            }
+        };
+
+        return new ForestAnalysisService(weatherService);
+    }
+
+    private static ForestArea CreateForestArea(int plantingYear)
+    {
+        return new ForestArea
+        {
+            Id = 1,
+            Name = "Testområde",
+            AreaHectares = 25,
+            TreeSpecies = "Gran",
+            PlantingYear = plantingYear,
+            Latitude = 56.6634,
+            Longitude = 16.3568
+        };
     }
 
     private class FakeWeatherService : IWeatherService

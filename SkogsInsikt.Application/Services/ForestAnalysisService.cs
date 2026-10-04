@@ -22,6 +22,8 @@ public class ForestAnalysisService
         var recommendation =
             "Inga särskilda väderrelaterade åtgärder rekommenderas just nu.";
 
+        var forestAge = DateTime.UtcNow.Year - forestArea.PlantingYear;
+
         if (weather.WindSpeed >= 15)
         {
             riskLevel = "High";
@@ -33,6 +35,20 @@ public class ForestAnalysisService
             riskLevel = "Medium";
             recommendation =
                 "Förhöjd nederbörd. Var uppmärksam på markförhållanden och planera körning för att minska markskador.";
+        }
+        else if (weather.Temperature >= 28 &&
+                 weather.Precipitation < 1)
+        {
+            riskLevel = "Medium";
+            recommendation =
+                "Varmt och torrt väder. Var extra uppmärksam på torra förhållanden och undvik aktiviteter som kan öka brandrisken.";
+        }
+        else if (forestAge >= 50 &&
+                 weather.WindSpeed >= 10)
+        {
+            riskLevel = "Medium";
+            recommendation =
+                "Äldre skog i kombination med förhöjd vind. Kontrollera området för instabila eller skadade träd.";
         }
 
         return new ForestAnalysis
