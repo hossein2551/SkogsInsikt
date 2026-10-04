@@ -358,3 +358,73 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+.errorMessage {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border: 1px solid #e4bcbc;
+  border-radius: 8px;
+  background: #fff1f1;
+  color: #8b2929;
+}
+
+.history {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #dde4dd;
+}
+
+.history h4 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 11px 0;
+  border-bottom: 1px solid #edf0ed;
+}
+
+.historyItem:last-child {
+  border-bottom: 0;
+}
+
+.historyItem div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.historyItem div strong {
+  font-size: 13px;
+}
+
+.historyItem div span {
+  color: #7b857e;
+  font-size: 12px;
+}
+
+.riskBadge {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.riskBadge-low {
+  background: #e5f1e9;
+  color: #246b45;
+}
+
+.riskBadge-medium {
+  background: #fff0c7;
+  color: #8a6200;
+}
+
+.riskBadge-high {
+  background: #f8dddd;
+  color: #a12e2e;
+}

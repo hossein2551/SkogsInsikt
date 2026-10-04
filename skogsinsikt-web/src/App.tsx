@@ -22,43 +22,63 @@ type ForestArea = {
   longitude: number;
 };
 
+const API_URL = "http://localhost:5113/api";
+
 function App() {
   const [forestAreas, setForestAreas] = useState<ForestArea[]>([]);
+  const [analyses, setAnalyses] = useState<ForestAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [analysis, setAnalysis] = useState<ForestAnalysis | null>(null);
   const [analyzingId, setAnalyzingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    const loadForestAreas = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:5113/api/ForestAreas"
-        );
+  const loadData = async () => {
+    try {
+      setError("");
 
-        if (!response.ok) {
-          throw new Error("Kunde inte hämta skogsområden.");
-        }
+      const areasResponse = await fetch(`${API_URL}/ForestAreas`);
 
-        const data: ForestArea[] = await response.json();
-        setForestAreas(data);
-      } catch {
-        setError("Kunde inte ansluta till SkogsInsikt API.");
-      } finally {
-        setLoading(false);
+      if (!areasResponse.ok) {
+        throw new Error("Kunde inte hämta skogsområden.");
       }
-    };
 
-    loadForestAreas();
+      const areas: ForestArea[] = await areasResponse.json();
+      setForestAreas(areas);
+
+      const historyResponses = await Promise.all(
+        areas.map((area) =>
+          fetch(`${API_URL}/ForestAnalysis/area/${area.id}`)
+        )
+      );
+
+      if (historyResponses.some((response) => !response.ok)) {
+        throw new Error("Kunde inte hämta analyshistorik.");
+      }
+
+      const history = await Promise.all(
+        historyResponses.map(
+          (response) => response.json() as Promise<ForestAnalysis[]>
+        )
+      );
+
+      setAnalyses(history.flat());
+    } catch {
+      setError("Kunde inte ansluta till SkogsInsikt API.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   const analyzeForestArea = async (id: number) => {
     try {
+      setError("");
       setAnalyzingId(id);
-      setAnalysis(null);
 
       const response = await fetch(
-        `http://localhost:5113/api/ForestAnalysis/${id}`,
+        `${API_URL}/ForestAnalysis/${id}`,
         {
           method: "POST",
         }
@@ -68,8 +88,12 @@ function App() {
         throw new Error("Analysen misslyckades.");
       }
 
-      const data: ForestAnalysis = await response.json();
-      setAnalysis(data);
+      const newAnalysis: ForestAnalysis = await response.json();
+
+      setAnalyses((current) => [
+        newAnalysis,
+        ...current.filter((item) => item.id !== newAnalysis.id),
+      ]);
     } catch {
       setError("Kunde inte genomföra skogsanalysen.");
     } finally {
@@ -81,6 +105,31 @@ function App() {
     (sum, area) => sum + area.areaHectares,
     0
   );
+
+  const latestAnalysisForArea = (forestAreaId: number) =>
+    analyses
+      .filter((item) => item.forestAreaId === forestAreaId)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime()
+      )[0];
+
+  const currentRiskCount = forestAreas.filter((area) => {
+    const latest = latestAnalysisForArea(area.id);
+
+    return (
+      latest &&
+      (latest.riskLevel === "Medium" ||
+        latest.riskLevel === "High")
+    );
+  }).length;
+
+  const formatDate = (date: string) =>
+    new Intl.DateTimeFormat("sv-SE", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(new Date(date));
 
   return (
     <div className="app">
@@ -125,10 +174,16 @@ function App() {
 
           <article>
             <p>Aktuella risker</p>
-            <strong>–</strong>
+            <strong>{loading ? "–" : currentRiskCount}</strong>
             <span>Områden med förhöjd risk</span>
           </article>
         </section>
+
+        {error && (
+          <div className="errorMessage">
+            {error}
+          </div>
+        )}
 
         <section className="panel">
           <div className="panelHeader">
@@ -144,92 +199,136 @@ function App() {
             </div>
           )}
 
-          {error && (
-            <div className="emptyState">
-              <h3>{error}</h3>
-            </div>
-          )}
-
-          {!loading && !error && forestAreas.length === 0 && (
+          {!loading && forestAreas.length === 0 && (
             <div className="emptyState">
               <h3>Inga skogsområden registrerade</h3>
             </div>
           )}
 
-          {!loading && !error && forestAreas.length > 0 && (
+          {!loading && forestAreas.length > 0 && (
             <div className="forestGrid">
-              {forestAreas.map((area) => (
-                <article className="forestCard" key={area.id}>
-                  <div className="forestCardTop">
-                    <div>
-                      <p className="eyebrow">SKOGSOMRÅDE</p>
-                      <h3>{area.name}</h3>
-                    </div>
+              {forestAreas.map((area) => {
+                const latest = latestAnalysisForArea(area.id);
+                const areaHistory = analyses
+                  .filter(
+                    (item) => item.forestAreaId === area.id
+                  )
+                  .sort(
+                    (a, b) =>
+                      new Date(b.createdAt).getTime() -
+                      new Date(a.createdAt).getTime()
+                  );
 
-                    <span className="species">
-                      {area.treeSpecies}
-                    </span>
-                  </div>
-
-                  <div className="forestDetails">
-                    <div>
-                      <span>Areal</span>
-                      <strong>{area.areaHectares} ha</strong>
-                    </div>
-
-                    <div>
-                      <span>Trädslag</span>
-                      <strong>{area.treeSpecies}</strong>
-                    </div>
-
-                    <div>
-                      <span>Planteringsår</span>
-                      <strong>{area.plantingYear}</strong>
-                    </div>
-                  </div>
-
-                  <button
-                    className="analysisButton"
-                    onClick={() => analyzeForestArea(area.id)}
-                    disabled={analyzingId === area.id}
-                  >
-                    {analyzingId === area.id
-                      ? "Analyserar..."
-                      : "Analysera område"}
-                  </button>
-
-                  {analysis?.forestAreaId === area.id && (
-                    <div className={`analysisResult risk-${analysis.riskLevel.toLowerCase()}`}>
-                      <div className="analysisHeader">
-                        <span>Aktuell risknivå</span>
-                        <strong>{analysis.riskLevel}</strong>
+                return (
+                  <article className="forestCard" key={area.id}>
+                    <div className="forestCardTop">
+                      <div>
+                        <p className="eyebrow">SKOGSOMRÅDE</p>
+                        <h3>{area.name}</h3>
                       </div>
 
-                      <div className="weatherData">
-                        <div>
-                          <span>Temperatur</span>
-                          <strong>{analysis.temperature} °C</strong>
-                        </div>
+                      <span className="species">
+                        {area.treeSpecies}
+                      </span>
+                    </div>
 
-                        <div>
-                          <span>Nederbörd</span>
-                          <strong>{analysis.precipitation} mm</strong>
-                        </div>
-
-                        <div>
-                          <span>Vind</span>
-                          <strong>{analysis.windSpeed} km/h</strong>
-                        </div>
+                    <div className="forestDetails">
+                      <div>
+                        <span>Areal</span>
+                        <strong>{area.areaHectares} ha</strong>
                       </div>
 
-                      <div className="recommendation">
-                        <span>Rekommendation</span>
-                        <p>{analysis.recommendation}</p>
+                      <div>
+                        <span>Trädslag</span>
+                        <strong>{area.treeSpecies}</strong>
+                      </div>
+
+                      <div>
+                        <span>Planteringsår</span>
+                        <strong>{area.plantingYear}</strong>
                       </div>
                     </div>
-                  )}
-                </article>
-              ))}
+
+                    <button
+                      className="analysisButton"
+                      onClick={() => analyzeForestArea(area.id)}
+                      disabled={analyzingId === area.id}
+                    >
+                      {analyzingId === area.id
+                        ? "Analyserar..."
+                        : "Analysera område"}
+                    </button>
+
+                    {latest && (
+                      <div
+                        className={`analysisResult risk-${latest.riskLevel.toLowerCase()}`}
+                      >
+                        <div className="analysisHeader">
+                          <span>Aktuell risknivå</span>
+                          <strong>{latest.riskLevel}</strong>
+                        </div>
+
+                        <div className="weatherData">
+                          <div>
+                            <span>Temperatur</span>
+                            <strong>
+                              {latest.temperature} °C
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>Nederbörd</span>
+                            <strong>
+                              {latest.precipitation} mm
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>Vind</span>
+                            <strong>
+                              {latest.windSpeed} km/h
+                            </strong>
+                          </div>
+                        </div>
+
+                        <div className="recommendation">
+                          <span>Rekommendation</span>
+                          <p>{latest.recommendation}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {areaHistory.length > 0 && (
+                      <div className="history">
+                        <h4>Analyshistorik</h4>
+
+                        {areaHistory.map((item) => (
+                          <div
+                            className="historyItem"
+                            key={item.id}
+                          >
+                            <div>
+                              <strong>
+                                {formatDate(item.createdAt)}
+                              </strong>
+                              <span>
+                                {item.temperature} °C ·{" "}
+                                {item.windSpeed} km/h
+                              </span>
+                            </div>
+
+                            <span
+                              className={`riskBadge riskBadge-${item.riskLevel.toLowerCase()}`}
+                            >
+                              {item.riskLevel}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
