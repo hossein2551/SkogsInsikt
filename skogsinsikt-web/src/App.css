@@ -580,3 +580,135 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+.mapEmpty {
+  display: grid;
+  min-height: 380px;
+  place-items: center;
+  color: #7b857e;
+  text-align: center;
+}
+
+.forestMap {
+  width: 100%;
+  height: 420px;
+  border-radius: 10px;
+  z-index: 1;
+}
+
+.mapMarker {
+  width: 22px;
+  height: 22px;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+}
+
+.mapMarkerLow {
+  background: #2e7d4f;
+}
+
+.mapMarkerMedium {
+  background: #c28a17;
+}
+
+.mapMarkerHigh {
+  background: #c43f3f;
+}
+
+.mapPopup {
+  display: flex;
+  min-width: 150px;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mapPopup strong {
+  font-size: 15px;
+}
+
+.mapPopup span {
+  font-size: 13px;
+}
+
+.mapPanel {
+  margin-bottom: 24px;
+  padding: 28px;
+  border: 1px solid #dde4dd;
+  border-radius: 12px;
+  background: white;
+}
+
+.mapPanelHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 22px;
+}
+
+.mapPanelHeader h2 {
+  margin: 0;
+  font-size: 23px;
+}
+
+.mapPanelHeader > div > p:last-child {
+  max-width: 600px;
+  margin: 8px 0 0;
+  color: #7b857e;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.mapLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.mapLegend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #68736b;
+  font-size: 12px;
+}
+
+.mapLegend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legendLow {
+  background: #2e7d4f;
+}
+
+.legendMedium {
+  background: #c28a17;
+}
+
+.legendHigh {
+  background: #c43f3f;
+}
+
+@media (max-width: 750px) {
+  .mapPanelHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .forestMap {
+    height: 350px;
+  }
+}
+
+.mapPanelHeader h2 {
+  color: #172019;
+  opacity: 1;
+}
+
+.hero h2 {
+  color: #172019;
+  opacity: 1;
+}

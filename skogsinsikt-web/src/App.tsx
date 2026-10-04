@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import ForestAreaForm, { type ForestAreaFormData } from "./components/ForestAreaForm";
+import ForestMap from "./components/ForestMap";
 
 type ForestAnalysis = {
   id: number;
@@ -300,6 +301,40 @@ function App() {
           </div>
         )}
 
+        <section className="mapPanel">
+          <div className="mapPanelHeader">
+            <div>
+              <p className="eyebrow">GIS-ÖVERSIKT</p>
+              <h2>Skogsområden på karta</h2>
+              <p>
+                Geografisk översikt över registrerade skogsområden
+                och deras aktuella risknivå.
+              </p>
+            </div>
+
+            <div className="mapLegend">
+              <span>
+                <i className="legendLow"></i>
+                Låg
+              </span>
+              <span>
+                <i className="legendMedium"></i>
+                Medel
+              </span>
+              <span>
+                <i className="legendHigh"></i>
+                Hög
+              </span>
+            </div>
+          </div>
+
+          {!loading && (
+            <ForestMap
+              forestAreas={forestAreas}
+              analyses={analyses}
+            />
+          )}
+        </section>
         <section className="panel">
           <div className="panelHeader">
             <div>
