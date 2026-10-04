@@ -1,7 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using SkogsInsikt.Infrastructure.Data;
 using SkogsInsikt.Application.Interfaces;
 using SkogsInsikt.Infrastructure.Services;
 using SkogsInsikt.Application.Services;
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<SkogsInsiktDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>();
 builder.Services.AddScoped<ForestAnalysisService>();
@@ -44,3 +49,4 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
