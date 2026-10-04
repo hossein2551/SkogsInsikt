@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SkogsInsikt.Application.DTOs;
 using SkogsInsikt.Application.Interfaces;
 using SkogsInsikt.Domain.Entities;
 
@@ -60,12 +61,22 @@ public class ForestAreasController : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult<ForestArea>> Create(
-        ForestArea forestArea)
+        ForestAreaRequest request)
     {
         var userId = GetUserId();
 
         if (userId is null)
             return Unauthorized();
+
+        var forestArea = new ForestArea
+        {
+            Name = request.Name,
+            AreaHectares = request.AreaHectares,
+            TreeSpecies = request.TreeSpecies,
+            PlantingYear = request.PlantingYear,
+            Latitude = request.Latitude,
+            Longitude = request.Longitude
+        };
 
         var createdArea =
             await _forestAreaService.CreateAsync(
@@ -81,15 +92,23 @@ public class ForestAreasController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(
         int id,
-        ForestArea forestArea)
+        ForestAreaRequest request)
     {
         var userId = GetUserId();
 
         if (userId is null)
             return Unauthorized();
 
-        if (id != forestArea.Id)
-            return BadRequest();
+        var forestArea = new ForestArea
+        {
+            Id = id,
+            Name = request.Name,
+            AreaHectares = request.AreaHectares,
+            TreeSpecies = request.TreeSpecies,
+            PlantingYear = request.PlantingYear,
+            Latitude = request.Latitude,
+            Longitude = request.Longitude
+        };
 
         var updated =
             await _forestAreaService.UpdateAsync(

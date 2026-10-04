@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import "./App.css";
 import ForestAreaForm, { type ForestAreaFormData } from "./components/ForestAreaForm";
 import ForestMap from "./components/ForestMap";
@@ -140,25 +140,26 @@ function App() {
     try {
       setError("");
 
-      const updatedArea: ForestArea = {
-        ...data,
-        id: editingArea.id,
-      };
-
       const response = await fetch(
         `${API_URL}/ForestAreas/${editingArea.id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            ...authHeaders,
           },
-          body: JSON.stringify(updatedArea),
+          body: JSON.stringify(data),
         }
       );
 
       if (!response.ok) {
         throw new Error("Kunde inte uppdatera skogsområdet.");
       }
+
+      const updatedArea: ForestArea = {
+        ...editingArea,
+        ...data,
+      };
 
       setForestAreas((current) =>
         current.map((area) =>
@@ -566,4 +567,6 @@ function App() {
 }
 
 export default App;
+
+
 
