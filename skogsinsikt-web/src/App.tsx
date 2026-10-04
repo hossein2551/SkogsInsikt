@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import ForestAreaForm, { type CreateForestAreaData } from "./components/ForestAreaForm";
+import ForestAreaForm, { type ForestAreaFormData } from "./components/ForestAreaForm";
 
 type ForestAnalysis = {
   id: number;
@@ -32,6 +32,7 @@ function App() {
   const [error, setError] = useState("");
   const [analyzingId, setAnalyzingId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingArea, setEditingArea] = useState<ForestArea | null>(null);
 
   const loadData = async () => {
     try {
@@ -74,7 +75,7 @@ function App() {
     loadData();
   }, []);
 
-  const createForestArea = async (data: CreateForestAreaData) => {
+  const createForestArea = async (data: ForestAreaFormData) => {
     try {
       setError("");
 
@@ -97,6 +98,77 @@ function App() {
     } catch {
       setError("Kunde inte spara skogsområdet.");
       throw new Error("Save failed");
+    }
+  };
+  const updateForestArea = async (data: ForestAreaFormData) => {
+    if (!editingArea) return;
+
+    try {
+      setError("");
+
+      const updatedArea: ForestArea = {
+        ...data,
+        id: editingArea.id,
+      };
+
+      const response = await fetch(
+        `${API_URL}/ForestAreas/${editingArea.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedArea),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Kunde inte uppdatera skogsområdet.");
+      }
+
+      setForestAreas((current) =>
+        current.map((area) =>
+          area.id === editingArea.id ? updatedArea : area
+        )
+      );
+
+      setEditingArea(null);
+    } catch {
+      setError("Kunde inte uppdatera skogsområdet.");
+      throw new Error("Update failed");
+    }
+  };
+
+  const deleteForestArea = async (id: number) => {
+    const confirmed = window.confirm(
+      "Är du säker på att du vill ta bort skogsområdet?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setError("");
+
+      const response = await fetch(
+        `${API_URL}/ForestAreas/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Kunde inte ta bort skogsområdet.");
+      }
+
+      setForestAreas((current) =>
+        current.filter((area) => area.id !== id)
+      );
+
+      setAnalyses((current) =>
+        current.filter((item) => item.forestAreaId !== id)
+      );
+    } catch {
+      setError("Kunde inte ta bort skogsområdet.");
     }
   };
   const analyzeForestArea = async (id: number) => {
@@ -164,6 +236,14 @@ function App() {
         <ForestAreaForm
           onSave={createForestArea}
           onCancel={() => setShowForm(false)}
+        />
+      )}
+
+      {editingArea && (
+        <ForestAreaForm
+          initialData={editingArea}
+          onSave={updateForestArea}
+          onCancel={() => setEditingArea(null)}
         />
       )}
       <header className="header">
@@ -284,15 +364,31 @@ function App() {
                       </div>
                     </div>
 
-                    <button
-                      className="analysisButton"
-                      onClick={() => analyzeForestArea(area.id)}
-                      disabled={analyzingId === area.id}
-                    >
-                      {analyzingId === area.id
-                        ? "Analyserar..."
-                        : "Analysera område"}
-                    </button>
+                    <div className="areaActions">
+                      <button
+                        className="analysisButton"
+                        onClick={() => analyzeForestArea(area.id)}
+                        disabled={analyzingId === area.id}
+                      >
+                        {analyzingId === area.id
+                          ? "Analyserar..."
+                          : "Analysera område"}
+                      </button>
+
+                      <button
+                        className="editButton"
+                        onClick={() => setEditingArea(area)}
+                      >
+                        Redigera
+                      </button>
+
+                      <button
+                        className="deleteButton"
+                        onClick={() => deleteForestArea(area.id)}
+                      >
+                        Ta bort
+                      </button>
+                    </div>
 
                     {latest && (
                       <div

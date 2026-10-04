@@ -540,3 +540,43 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+.areaActions {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 9px;
+}
+
+.editButton,
+.deleteButton {
+  padding: 11px;
+  border-radius: 7px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.editButton {
+  border: 1px solid #77867c;
+  background: white;
+  color: #465149;
+}
+
+.editButton:hover {
+  background: #f0f3f1;
+}
+
+.deleteButton {
+  border: 1px solid #c86a6a;
+  background: white;
+  color: #a12e2e;
+}
+
+.deleteButton:hover {
+  background: #fff0f0;
+}
+
+@media (max-width: 600px) {
+  .areaActions {
+    grid-template-columns: 1fr;
+  }
+}

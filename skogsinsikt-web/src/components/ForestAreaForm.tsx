@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export type CreateForestAreaData = {
+export type ForestAreaFormData = {
   name: string;
   areaHectares: number;
   treeSpecies: string;
@@ -10,17 +10,34 @@ export type CreateForestAreaData = {
 };
 
 type Props = {
-  onSave: (data: CreateForestAreaData) => Promise<void>;
+  onSave: (data: ForestAreaFormData) => Promise<void>;
   onCancel: () => void;
+  initialData?: ForestAreaFormData;
 };
 
-function ForestAreaForm({ onSave, onCancel }: Props) {
-  const [name, setName] = useState("");
-  const [areaHectares, setAreaHectares] = useState("");
-  const [treeSpecies, setTreeSpecies] = useState("");
-  const [plantingYear, setPlantingYear] = useState("");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+function ForestAreaForm({
+  onSave,
+  onCancel,
+  initialData,
+}: Props) {
+  const isEditing = Boolean(initialData);
+
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [areaHectares, setAreaHectares] = useState(
+    initialData?.areaHectares.toString() ?? ""
+  );
+  const [treeSpecies, setTreeSpecies] = useState(
+    initialData?.treeSpecies ?? ""
+  );
+  const [plantingYear, setPlantingYear] = useState(
+    initialData?.plantingYear.toString() ?? ""
+  );
+  const [latitude, setLatitude] = useState(
+    initialData?.latitude.toString() ?? ""
+  );
+  const [longitude, setLongitude] = useState(
+    initialData?.longitude.toString() ?? ""
+  );
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -47,8 +64,14 @@ function ForestAreaForm({ onSave, onCancel }: Props) {
       <div className="formModal">
         <div className="formHeader">
           <div>
-            <p className="eyebrow">NYTT OMRÅDE</p>
-            <h2>Lägg till skogsområde</h2>
+            <p className="eyebrow">
+              {isEditing ? "REDIGERA OMRÅDE" : "NYTT OMRÅDE"}
+            </p>
+            <h2>
+              {isEditing
+                ? "Redigera skogsområde"
+                : "Lägg till skogsområde"}
+            </h2>
           </div>
 
           <button
@@ -69,7 +92,6 @@ function ForestAreaForm({ onSave, onCancel }: Props) {
               maxLength={100}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Exempel: Norra skogen"
             />
           </label>
 
@@ -92,7 +114,6 @@ function ForestAreaForm({ onSave, onCancel }: Props) {
                 required
                 value={treeSpecies}
                 onChange={(e) => setTreeSpecies(e.target.value)}
-                placeholder="Exempel: Gran"
               />
             </label>
           </div>
@@ -151,7 +172,11 @@ function ForestAreaForm({ onSave, onCancel }: Props) {
               className="saveButton"
               disabled={saving}
             >
-              {saving ? "Sparar..." : "Spara skogsområde"}
+              {saving
+                ? "Sparar..."
+                : isEditing
+                  ? "Spara ändringar"
+                  : "Spara skogsområde"}
             </button>
           </div>
         </form>
