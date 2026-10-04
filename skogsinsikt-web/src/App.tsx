@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import ForestAreaForm, { type CreateForestAreaData } from "./components/ForestAreaForm";
 
 type ForestAnalysis = {
   id: number;
@@ -30,6 +31,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [analyzingId, setAnalyzingId] = useState<number | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   const loadData = async () => {
     try {
@@ -72,6 +74,31 @@ function App() {
     loadData();
   }, []);
 
+  const createForestArea = async (data: CreateForestAreaData) => {
+    try {
+      setError("");
+
+      const response = await fetch(`${API_URL}/ForestAreas`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Kunde inte skapa skogsområdet.");
+      }
+
+      const createdArea: ForestArea = await response.json();
+
+      setForestAreas((current) => [...current, createdArea]);
+      setShowForm(false);
+    } catch {
+      setError("Kunde inte spara skogsområdet.");
+      throw new Error("Save failed");
+    }
+  };
   const analyzeForestArea = async (id: number) => {
     try {
       setError("");
@@ -133,6 +160,12 @@ function App() {
 
   return (
     <div className="app">
+      {showForm && (
+        <ForestAreaForm
+          onSave={createForestArea}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
       <header className="header">
         <div>
           <h1>SkogsInsikt</h1>
@@ -156,7 +189,9 @@ function App() {
             </p>
           </div>
 
-          <button>+ Lägg till skogsområde</button>
+          <button onClick={() => setShowForm(true)}>
+            + Lägg till skogsområde
+          </button>
         </section>
 
         <section className="stats">
