@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import ForestAreaForm, { type ForestAreaFormData } from "./components/ForestAreaForm";
 import ForestMap from "./components/ForestMap";
+import AuthPage from "./components/AuthPage";
+import type { AuthResponse } from "./types/auth";
 
 type ForestAnalysis = {
   id: number;
@@ -27,6 +29,26 @@ type ForestArea = {
 const API_URL = "http://localhost:5113/api";
 
 function App() {
+  const [auth, setAuth] = useState<AuthResponse | null>(() => {
+    const saved = localStorage.getItem("skogsinsikt-auth");
+
+    if (!saved) return null;
+
+    try {
+      const parsed = JSON.parse(saved) as AuthResponse;
+
+      if (new Date(parsed.expiresAt) <= new Date()) {
+        localStorage.removeItem("skogsinsikt-auth");
+        return null;
+      }
+
+      return parsed;
+    } catch {
+      localStorage.removeItem("skogsinsikt-auth");
+      return null;
+    }
+  });
+
   const [forestAreas, setForestAreas] = useState<ForestArea[]>([]);
   const [analyses, setAnalyses] = useState<ForestAnalysis[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,11 +57,17 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [editingArea, setEditingArea] = useState<ForestArea | null>(null);
 
+  const authHeaders: HeadersInit = auth
+    ? { Authorization: `Bearer ${auth.token}` }
+    : {};
+
   const loadData = async () => {
     try {
       setError("");
 
-      const areasResponse = await fetch(`${API_URL}/ForestAreas`);
+      const areasResponse = await fetch(`${API_URL}/ForestAreas`, {
+        headers: authHeaders,
+      });
 
       if (!areasResponse.ok) {
         throw new Error("Kunde inte hämta skogsområden.");
@@ -50,7 +78,9 @@ function App() {
 
       const historyResponses = await Promise.all(
         areas.map((area) =>
-          fetch(`${API_URL}/ForestAnalysis/area/${area.id}`)
+          fetch(`${API_URL}/ForestAnalysis/area/${area.id}`, {
+            headers: authHeaders,
+          })
         )
       );
 
@@ -73,8 +103,10 @@ function App() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (auth) {
+      loadData();
+    }
+  }, [auth]);
 
   const createForestArea = async (data: ForestAreaFormData) => {
     try {
@@ -84,6 +116,7 @@ function App() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...authHeaders,
         },
         body: JSON.stringify(data),
       });
@@ -154,6 +187,7 @@ function App() {
         `${API_URL}/ForestAreas/${id}`,
         {
           method: "DELETE",
+          headers: authHeaders,
         }
       );
 
@@ -181,6 +215,7 @@ function App() {
         `${API_URL}/ForestAnalysis/${id}`,
         {
           method: "POST",
+          headers: authHeaders,
         }
       );
 
@@ -200,6 +235,27 @@ function App() {
       setAnalyzingId(null);
     }
   };
+
+  const handleAuthenticated = (response: AuthResponse) => {
+    localStorage.setItem(
+      "skogsinsikt-auth",
+      JSON.stringify(response)
+    );
+
+    setAuth(response);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("skogsinsikt-auth");
+    setAuth(null);
+    setForestAreas([]);
+    setAnalyses([]);
+    setError("");
+  };
+
+  if (!auth) {
+    return <AuthPage onAuthenticated={handleAuthenticated} />;
+  }
 
   const totalArea = forestAreas.reduce(
     (sum, area) => sum + area.areaHectares,
@@ -253,9 +309,15 @@ function App() {
           <p>Digitalt beslutsstöd för skogsägare</p>
         </div>
 
-        <div className="status">
-          <span></span>
-          System online
+        <div className="userSession">
+          <div>
+            <strong>{auth.fullName}</strong>
+            <span>{auth.role}</span>
+          </div>
+
+          <button type="button" onClick={logout}>
+            Logga ut
+          </button>
         </div>
       </header>
 
@@ -504,3 +566,4 @@ function App() {
 }
 
 export default App;
+

@@ -712,3 +712,267 @@ button {
   color: #172019;
   opacity: 1;
 }
+
+/* Authentication */
+
+.authPage {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  background: #f4f6f1;
+}
+
+.authIntro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px;
+  background: #183c2b;
+  color: white;
+}
+
+.authIntro .eyebrow {
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #b8d3c2;
+}
+
+.authIntro h1 {
+  max-width: 600px;
+  margin: 0 0 22px;
+  font-size: clamp(42px, 5vw, 72px);
+  line-height: 1.05;
+  color: white;
+}
+
+.authIntro > p:not(.eyebrow) {
+  max-width: 620px;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.7;
+  color: #dbe8df;
+}
+
+.authFeatures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 36px;
+}
+
+.authFeatures span {
+  padding: 9px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 14px;
+  color: #eef5f0;
+}
+
+.authCard {
+  width: min(440px, calc(100% - 48px));
+  margin: auto;
+  padding: 38px;
+  border: 1px solid #dde3dc;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 18px 50px rgba(25, 50, 35, 0.08);
+}
+
+.authTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 32px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #eef1ec;
+}
+
+.authTabs button {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px;
+  background: transparent;
+  color: #647067;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.authTabs button.active {
+  background: white;
+  color: #183c2b;
+  box-shadow: 0 2px 8px rgba(20, 45, 30, 0.08);
+}
+
+.authHeading {
+  margin-bottom: 28px;
+}
+
+.authHeading h2 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  color: #17231b;
+}
+
+.authHeading p {
+  margin: 0;
+  line-height: 1.6;
+  color: #6c756e;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.authForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #34443a;
+}
+
+.authForm input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid #cfd8d1;
+  border-radius: 9px;
+  outline: none;
+  background: white;
+  color: #17231b;
+  font: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.authForm input:focus {
+  border-color: #26754d;
+  box-shadow: 0 0 0 3px rgba(38, 117, 77, 0.12);
+}
+
+.authSubmit {
+  margin-top: 4px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 9px;
+  background: #26754d;
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.authSubmit:hover {
+  background: #1e6240;
+}
+
+.authSubmit:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.authError {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff0f0;
+  color: #a02d2d;
+  font-size: 14px;
+}
+
+.authFooter {
+  margin: 24px 0 0;
+  text-align: center;
+  color: #69736c;
+  font-size: 14px;
+}
+
+.authFooter button {
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #26754d;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.userSession {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.userSession > div {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.userSession strong {
+  font-size: 14px;
+}
+
+.userSession span {
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.userSession button {
+  padding: 9px 14px;
+  border: 1px solid #d5ddd7;
+  border-radius: 8px;
+  background: white;
+  color: #26382d;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 850px) {
+  .authPage {
+    grid-template-columns: 1fr;
+  }
+
+  .authIntro {
+    padding: 48px 28px;
+  }
+
+  .authIntro h1 {
+    font-size: 44px;
+  }
+
+  .authCard {
+    margin: 48px auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .authIntro {
+    padding: 38px 22px;
+  }
+
+  .authIntro h1 {
+    font-size: 36px;
+  }
+
+  .authCard {
+    width: calc(100% - 28px);
+    margin: 28px auto;
+    padding: 26px 20px;
+    box-sizing: border-box;
+  }
+
+  .userSession > div {
+    display: none;
+  }
+}
