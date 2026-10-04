@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SkogsInsikt.Api.Middleware;
 using SkogsInsikt.Application.Interfaces;
 using SkogsInsikt.Application.Services;
@@ -13,6 +13,7 @@ builder.Services.AddDbContext<SkogsInsiktDbContext>(options =>
 
 builder.Services.AddHttpClient<IWeatherService, OpenMeteoWeatherService>();
 builder.Services.AddScoped<ForestAnalysisService>();
+builder.Services.AddScoped<IForestAreaService, ForestAreaService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

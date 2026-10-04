@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using SkogsInsikt.Application.Interfaces;
 using SkogsInsikt.Domain.Entities;
-using SkogsInsikt.Infrastructure.Data;
 
 namespace SkogsInsikt.Api.Controllers;
 
@@ -9,23 +8,28 @@ namespace SkogsInsikt.Api.Controllers;
 [Route("api/[controller]")]
 public class ForestAreasController : ControllerBase
 {
-    private readonly SkogsInsiktDbContext _context;
+    private readonly IForestAreaService _forestAreaService;
 
-    public ForestAreasController(SkogsInsiktDbContext context)
+    public ForestAreasController(
+        IForestAreaService forestAreaService)
     {
-        _context = context;
+        _forestAreaService = forestAreaService;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ForestArea>>> GetAll()
     {
-        return Ok(await _context.ForestAreas.ToListAsync());
+        var forestAreas =
+            await _forestAreaService.GetAllAsync();
+
+        return Ok(forestAreas);
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ForestArea>> GetById(int id)
     {
-        var forestArea = await _context.ForestAreas.FindAsync(id);
+        var forestArea =
+            await _forestAreaService.GetByIdAsync(id);
 
         if (forestArea is null)
             return NotFound();
@@ -34,30 +38,33 @@ public class ForestAreasController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ForestArea>> Create(ForestArea forestArea)
+    public async Task<ActionResult<ForestArea>> Create(
+        ForestArea forestArea)
     {
-        _context.ForestAreas.Add(forestArea);
-        await _context.SaveChangesAsync();
+        var createdArea =
+            await _forestAreaService.CreateAsync(forestArea);
 
         return CreatedAtAction(
             nameof(GetById),
-            new { id = forestArea.Id },
-            forestArea);
+            new { id = createdArea.Id },
+            createdArea);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, ForestArea forestArea)
+    public async Task<IActionResult> Update(
+        int id,
+        ForestArea forestArea)
     {
         if (id != forestArea.Id)
             return BadRequest();
 
-        var exists = await _context.ForestAreas.AnyAsync(x => x.Id == id);
+        var updated =
+            await _forestAreaService.UpdateAsync(
+                id,
+                forestArea);
 
-        if (!exists)
+        if (!updated)
             return NotFound();
-
-        _context.Entry(forestArea).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
 
         return NoContent();
     }
@@ -65,13 +72,11 @@ public class ForestAreasController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var forestArea = await _context.ForestAreas.FindAsync(id);
+        var deleted =
+            await _forestAreaService.DeleteAsync(id);
 
-        if (forestArea is null)
+        if (!deleted)
             return NotFound();
-
-        _context.ForestAreas.Remove(forestArea);
-        await _context.SaveChangesAsync();
 
         return NoContent();
     }
