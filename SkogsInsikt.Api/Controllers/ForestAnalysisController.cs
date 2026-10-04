@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkogsInsikt.Application.Services;
@@ -49,3 +50,4 @@ public class ForestAnalysisController : ControllerBase
         return Ok(analyses);
     }
 }
+

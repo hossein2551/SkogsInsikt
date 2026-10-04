@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkogsInsikt.Application.Interfaces;
 using SkogsInsikt.Domain.Entities;

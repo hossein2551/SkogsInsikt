@@ -1,9 +1,12 @@
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SkogsInsikt.Domain.Entities;
+using SkogsInsikt.Infrastructure.Identity;
 
 namespace SkogsInsikt.Infrastructure.Data;
 
-public class SkogsInsiktDbContext : DbContext
+public class SkogsInsiktDbContext
+    : IdentityDbContext<ApplicationUser>
 {
     public SkogsInsiktDbContext(
         DbContextOptions<SkogsInsiktDbContext> options)
