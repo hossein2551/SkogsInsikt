@@ -1,3 +1,4 @@
+using SkogsInsikt.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
 using SkogsInsikt.Infrastructure.Data;
 using SkogsInsikt.Application.Interfaces;
@@ -15,6 +16,8 @@ builder.Services.AddScoped<ForestAnalysisService>();
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -49,4 +52,5 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
 
