@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkogsInsikt.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using SkogsInsikt.Infrastructure.Data;
 namespace SkogsInsikt.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SkogsInsiktDbContext))]
-    partial class SkogsInsiktDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261004201927_AddForestAreaOwnership")]
+    partial class AddForestAreaOwnership
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

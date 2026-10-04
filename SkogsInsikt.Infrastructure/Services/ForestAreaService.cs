@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SkogsInsikt.Application.Interfaces;
 using SkogsInsikt.Domain.Entities;
 using SkogsInsikt.Infrastructure.Data;
@@ -14,22 +14,33 @@ public class ForestAreaService : IForestAreaService
         _context = context;
     }
 
-    public async Task<IEnumerable<ForestArea>> GetAllAsync()
+    public async Task<IEnumerable<ForestArea>> GetAllAsync(
+        string userId)
     {
         return await _context.ForestAreas
             .AsNoTracking()
+            .Where(area => area.UserId == userId)
             .ToListAsync();
     }
 
-    public async Task<ForestArea?> GetByIdAsync(int id)
+    public async Task<ForestArea?> GetByIdAsync(
+        int id,
+        string userId)
     {
         return await _context.ForestAreas
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(
+                area =>
+                    area.Id == id &&
+                    area.UserId == userId);
     }
 
-    public async Task<ForestArea> CreateAsync(ForestArea forestArea)
+    public async Task<ForestArea> CreateAsync(
+        ForestArea forestArea,
+        string userId)
     {
+        forestArea.UserId = userId;
+
         _context.ForestAreas.Add(forestArea);
         await _context.SaveChangesAsync();
 
@@ -38,9 +49,15 @@ public class ForestAreaService : IForestAreaService
 
     public async Task<bool> UpdateAsync(
         int id,
-        ForestArea forestArea)
+        ForestArea forestArea,
+        string userId)
     {
-        var existingArea = await _context.ForestAreas.FindAsync(id);
+        var existingArea =
+            await _context.ForestAreas
+                .FirstOrDefaultAsync(
+                    area =>
+                        area.Id == id &&
+                        area.UserId == userId);
 
         if (existingArea is null)
             return false;
@@ -57,9 +74,16 @@ public class ForestAreaService : IForestAreaService
         return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(
+        int id,
+        string userId)
     {
-        var forestArea = await _context.ForestAreas.FindAsync(id);
+        var forestArea =
+            await _context.ForestAreas
+                .FirstOrDefaultAsync(
+                    area =>
+                        area.Id == id &&
+                        area.UserId == userId);
 
         if (forestArea is null)
             return false;

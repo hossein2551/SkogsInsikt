@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SkogsInsikt.Application.Interfaces;
 using SkogsInsikt.Domain.Entities;
@@ -7,6 +8,7 @@ namespace SkogsInsikt.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ForestAreasController : ControllerBase
 {
     private readonly IForestAreaService _forestAreaService;
@@ -17,11 +19,22 @@ public class ForestAreasController : ControllerBase
         _forestAreaService = forestAreaService;
     }
 
+    private string? GetUserId()
+    {
+        return User.FindFirstValue(
+            ClaimTypes.NameIdentifier);
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ForestArea>>> GetAll()
     {
+        var userId = GetUserId();
+
+        if (userId is null)
+            return Unauthorized();
+
         var forestAreas =
-            await _forestAreaService.GetAllAsync();
+            await _forestAreaService.GetAllAsync(userId);
 
         return Ok(forestAreas);
     }
@@ -29,8 +42,15 @@ public class ForestAreasController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ForestArea>> GetById(int id)
     {
+        var userId = GetUserId();
+
+        if (userId is null)
+            return Unauthorized();
+
         var forestArea =
-            await _forestAreaService.GetByIdAsync(id);
+            await _forestAreaService.GetByIdAsync(
+                id,
+                userId);
 
         if (forestArea is null)
             return NotFound();
@@ -42,8 +62,15 @@ public class ForestAreasController : ControllerBase
     public async Task<ActionResult<ForestArea>> Create(
         ForestArea forestArea)
     {
+        var userId = GetUserId();
+
+        if (userId is null)
+            return Unauthorized();
+
         var createdArea =
-            await _forestAreaService.CreateAsync(forestArea);
+            await _forestAreaService.CreateAsync(
+                forestArea,
+                userId);
 
         return CreatedAtAction(
             nameof(GetById),
@@ -56,13 +83,19 @@ public class ForestAreasController : ControllerBase
         int id,
         ForestArea forestArea)
     {
+        var userId = GetUserId();
+
+        if (userId is null)
+            return Unauthorized();
+
         if (id != forestArea.Id)
             return BadRequest();
 
         var updated =
             await _forestAreaService.UpdateAsync(
                 id,
-                forestArea);
+                forestArea,
+                userId);
 
         if (!updated)
             return NotFound();
@@ -73,8 +106,15 @@ public class ForestAreasController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var userId = GetUserId();
+
+        if (userId is null)
+            return Unauthorized();
+
         var deleted =
-            await _forestAreaService.DeleteAsync(id);
+            await _forestAreaService.DeleteAsync(
+                id,
+                userId);
 
         if (!deleted)
             return NotFound();

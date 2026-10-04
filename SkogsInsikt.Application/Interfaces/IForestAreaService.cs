@@ -1,12 +1,25 @@
-using SkogsInsikt.Domain.Entities;
+﻿using SkogsInsikt.Domain.Entities;
 
 namespace SkogsInsikt.Application.Interfaces;
 
 public interface IForestAreaService
 {
-    Task<IEnumerable<ForestArea>> GetAllAsync();
-    Task<ForestArea?> GetByIdAsync(int id);
-    Task<ForestArea> CreateAsync(ForestArea forestArea);
-    Task<bool> UpdateAsync(int id, ForestArea forestArea);
-    Task<bool> DeleteAsync(int id);
+    Task<IEnumerable<ForestArea>> GetAllAsync(string userId);
+
+    Task<ForestArea?> GetByIdAsync(
+        int id,
+        string userId);
+
+    Task<ForestArea> CreateAsync(
+        ForestArea forestArea,
+        string userId);
+
+    Task<bool> UpdateAsync(
+        int id,
+        ForestArea forestArea,
+        string userId);
+
+    Task<bool> DeleteAsync(
+        int id,
+        string userId);
 }

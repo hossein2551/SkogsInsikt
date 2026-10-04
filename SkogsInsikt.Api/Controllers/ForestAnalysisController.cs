@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SkogsInsikt.Application.Services;
@@ -9,6 +10,7 @@ namespace SkogsInsikt.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ForestAnalysisController : ControllerBase
 {
     private readonly ForestAnalysisService _analysisService;
@@ -22,15 +24,31 @@ public class ForestAnalysisController : ControllerBase
         _context = context;
     }
 
-    [HttpPost("{forestAreaId:int}")]
-    public async Task<ActionResult<ForestAnalysis>> Analyze(int forestAreaId)
+    private string? GetUserId()
     {
-        var forestArea = await _context.ForestAreas.FindAsync(forestAreaId);
+        return User.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+
+    [HttpPost("{forestAreaId:int}")]
+    public async Task<ActionResult<ForestAnalysis>> Analyze(
+        int forestAreaId)
+    {
+        var userId = GetUserId();
+
+        if (userId is null)
+            return Unauthorized();
+
+        var forestArea = await _context.ForestAreas
+            .FirstOrDefaultAsync(
+                area =>
+                    area.Id == forestAreaId &&
+                    area.UserId == userId);
 
         if (forestArea is null)
             return NotFound();
 
-        var analysis = await _analysisService.AnalyzeAsync(forestArea);
+        var analysis =
+            await _analysisService.AnalyzeAsync(forestArea);
 
         _context.ForestAnalyses.Add(analysis);
         await _context.SaveChangesAsync();
@@ -42,12 +60,27 @@ public class ForestAnalysisController : ControllerBase
     public async Task<ActionResult<IEnumerable<ForestAnalysis>>> GetByForestArea(
         int forestAreaId)
     {
+        var userId = GetUserId();
+
+        if (userId is null)
+            return Unauthorized();
+
+        var ownsArea = await _context.ForestAreas
+            .AnyAsync(
+                area =>
+                    area.Id == forestAreaId &&
+                    area.UserId == userId);
+
+        if (!ownsArea)
+            return NotFound();
+
         var analyses = await _context.ForestAnalyses
-            .Where(x => x.ForestAreaId == forestAreaId)
-            .OrderByDescending(x => x.CreatedAt)
+            .AsNoTracking()
+            .Where(analysis =>
+                analysis.ForestAreaId == forestAreaId)
+            .OrderByDescending(analysis => analysis.CreatedAt)
             .ToListAsync();
 
         return Ok(analyses);
     }
 }
-

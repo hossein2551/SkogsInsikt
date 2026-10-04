@@ -21,6 +21,12 @@ public class SkogsInsiktDbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<ForestArea>()
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(area => area.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<ForestAnalysis>()
             .HasOne<ForestArea>()
             .WithMany()
@@ -28,3 +34,4 @@ public class SkogsInsiktDbContext
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
+

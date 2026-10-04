@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SkogsInsikt.Domain.Entities;
 
@@ -25,4 +25,7 @@ public class ForestArea
 
     [Range(-180, 180, ErrorMessage = "Longitud måste vara mellan -180 och 180.")]
     public double Longitude { get; set; }
+
+    [Required]
+    public string UserId { get; set; } = string.Empty;
 }
