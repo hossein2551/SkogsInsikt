@@ -4,7 +4,7 @@
   RegisterRequest,
 } from "../types/auth";
 
-const API_URL = "http://localhost:5113/api";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5113/api";
 
 async function handleResponse(response: Response): Promise<AuthResponse> {
   if (!response.ok) {
@@ -47,3 +47,4 @@ export async function register(
 
   return handleResponse(response);
 }
+

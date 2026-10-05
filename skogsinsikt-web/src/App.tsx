@@ -26,7 +26,7 @@ type ForestArea = {
   longitude: number;
 };
 
-const API_URL = "http://localhost:5113/api";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5113/api";
 
 function App() {
   const [auth, setAuth] = useState<AuthResponse | null>(() => {
@@ -567,6 +567,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

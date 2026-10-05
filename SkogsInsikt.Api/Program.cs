@@ -82,7 +82,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Frontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(
+                "http://localhost:5173",
+                "https://hossein2551.github.io")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -111,4 +113,5 @@ app.Run();
 
 
 public partial class Program { }
+
 
