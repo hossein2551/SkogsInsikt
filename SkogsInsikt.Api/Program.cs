@@ -14,7 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<SkogsInsiktDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions =>
+            sqlOptions.MigrationsHistoryTable(
+                "__EFMigrationsHistory",
+                "insikt")));
 
 builder.Services.AddDataProtection();
 
@@ -107,3 +111,4 @@ app.Run();
 
 
 public partial class Program { }
+

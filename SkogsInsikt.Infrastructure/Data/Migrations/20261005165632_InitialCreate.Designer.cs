@@ -12,14 +12,15 @@ using SkogsInsikt.Infrastructure.Data;
 namespace SkogsInsikt.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SkogsInsiktDbContext))]
-    [Migration("20261004191351_AddIdentityAuthentication")]
-    partial class AddIdentityAuthentication
+    [Migration("20261005165632_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("insikt")
                 .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -49,7 +50,7 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("AspNetRoles", "insikt");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -74,7 +75,7 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", (string)null);
+                    b.ToTable("AspNetRoleClaims", "insikt");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -99,7 +100,7 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", (string)null);
+                    b.ToTable("AspNetUserClaims", "insikt");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -121,7 +122,7 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable("AspNetUserLogins", "insikt");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -136,7 +137,7 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", (string)null);
+                    b.ToTable("AspNetUserRoles", "insikt");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -155,7 +156,7 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable("AspNetUserTokens", "insikt");
                 });
 
             modelBuilder.Entity("SkogsInsikt.Domain.Entities.ForestAnalysis", b =>
@@ -193,7 +194,7 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
 
                     b.HasIndex("ForestAreaId");
 
-                    b.ToTable("ForestAnalyses");
+                    b.ToTable("ForestAnalyses", "insikt");
                 });
 
             modelBuilder.Entity("SkogsInsikt.Domain.Entities.ForestArea", b =>
@@ -226,9 +227,15 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("ForestAreas");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ForestAreas", "insikt");
                 });
 
             modelBuilder.Entity("SkogsInsikt.Infrastructure.Identity.ApplicationUser", b =>
@@ -297,7 +304,7 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("AspNetUsers", "insikt");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -356,6 +363,15 @@ namespace SkogsInsikt.Infrastructure.Data.Migrations
                     b.HasOne("SkogsInsikt.Domain.Entities.ForestArea", null)
                         .WithMany()
                         .HasForeignKey("ForestAreaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SkogsInsikt.Domain.Entities.ForestArea", b =>
+                {
+                    b.HasOne("SkogsInsikt.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

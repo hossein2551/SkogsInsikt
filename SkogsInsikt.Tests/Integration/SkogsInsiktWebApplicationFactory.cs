@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using SkogsInsikt.Infrastructure.Data;
 
 namespace SkogsInsikt.Tests.Integration;
@@ -11,6 +11,9 @@ namespace SkogsInsikt.Tests.Integration;
 public class SkogsInsiktWebApplicationFactory
     : WebApplicationFactory<Program>
 {
+    private readonly string _databaseName =
+        $"SkogsInsiktTests-{Guid.NewGuid()}";
+
     protected override void ConfigureWebHost(
         IWebHostBuilder builder)
     {
@@ -31,6 +34,9 @@ public class SkogsInsiktWebApplicationFactory
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<
+                IDbContextOptionsConfiguration<SkogsInsiktDbContext>>();
+
+            services.RemoveAll<
                 DbContextOptions<SkogsInsiktDbContext>>();
 
             services.RemoveAll<SkogsInsiktDbContext>();
@@ -38,19 +44,8 @@ public class SkogsInsiktWebApplicationFactory
             services.AddDbContext<SkogsInsiktDbContext>(
                 options =>
                 {
-                    options.UseInMemoryDatabase(
-                        $"SkogsInsiktTests-{Guid.NewGuid()}");
+                    options.UseInMemoryDatabase(_databaseName);
                 });
-
-            using var scope =
-                services.BuildServiceProvider()
-                    .CreateScope();
-
-            var context =
-                scope.ServiceProvider
-                    .GetRequiredService<SkogsInsiktDbContext>();
-
-            context.Database.EnsureCreated();
         });
     }
 }
